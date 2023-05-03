@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  oxidized-roga-challenge-db:
+    user: "1000:1000"
+    env_file:
+      - ../.env
+    build:
+      context: ./.local
+      dockerfile: Dockerfile
+    volumes:
+      - ./data:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: ${DATABASE_NAME}
+      MYSQL_USER: ${DATABASE_USER}
+      MYSQL_PASSWORD: ${DATABASE_PASSWORD}
+      MYSQL_PORT: ${DATABASE_PORT}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - 3306:3306
+    restart: always

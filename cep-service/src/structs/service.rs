@@ -25,7 +25,7 @@ impl CepService {
         response
     }
 
-    pub async fn cached_cep(&mut self, cep: Cep) -> CepServiceResponse {
+    pub async fn get_cep(&mut self, cep: Cep) -> CepServiceResponse {
         match self.cache.get(&cep.to_string()) {
             Some(response) => response.clone(),
             None => {

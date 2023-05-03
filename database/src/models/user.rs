@@ -1,13 +1,14 @@
+use crate::traits::{database::Database, login::Login, persist::Persist, token::Token};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::{error::BoxDynError, MySqlPool};
-
-use crate::traits::{database::Database, persist::Persist};
+use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserModel {
     pub id: u64,
+    pub api_token: Uuid,
     pub name: String,
     pub email: String,
     pub password: String,
@@ -40,7 +41,7 @@ impl Database<MySqlPool> for UserModel {
         let user = sqlx::query_as!(
             UserModel,
             r#"
-                SELECT id, name, email, password, created_at, updated_at
+                SELECT id, "api_token!: Uuid", name, email, password, created_at, updated_at
                 FROM users
                 WHERE id = ?
             "#,
@@ -58,7 +59,7 @@ impl Database<MySqlPool> for UserModel {
         let result = sqlx::query_as!(
             UserModel,
             r#"
-                SELECT id, name, email, password, created_at, updated_at
+                SELECT id, "api_token!: Uuid", name, email, password, created_at, updated_at
                 FROM users
             "#
         )
@@ -81,7 +82,6 @@ impl Persist for UserModel {
             r#"
                     INSERT INTO users (name, email, password)
                     VALUES (?, ?, ?)
-                    RETURNING id
                 "#,
             &self.name,
             &self.email,
@@ -132,12 +132,56 @@ impl Persist for UserModel {
     }
 }
 
+#[async_trait]
+impl Login for UserModel {
+    async fn login(body: LoginModel, connection_pool: &Self::Connection) -> sqlx::Result<Self> {
+        let user = sqlx::query_as!(
+            UserModel,
+            r#"
+                SELECT id, "api_token!: Uuid", name, email, password, created_at, updated_at
+                FROM users
+                WHERE email = ?
+            "#,
+            body.email,
+        )
+        .fetch_one(connection_pool)
+        .await?;
+
+        Ok(user)
+    }
+}
+
+#[async_trait]
+impl Token for UserModel {
+    async fn get_by_uuid<'long>(
+        uuid: Uuid,
+        connection_pool: &'long Self::Connection,
+    ) -> sqlx::Result<Self>
+    where
+        Self: 'long,
+    {
+        let user = sqlx::query_as!(
+            UserModel,
+            r#"
+                SELECT id, "api_token!: Uuid", name, email, password, created_at, updated_at
+                FROM users
+                WHERE api_token = ?
+            "#,
+            uuid
+        )
+        .fetch_one(connection_pool)
+        .await?;
+        Ok(user)
+    }
+}
+
 impl TryFrom<NewUserModel> for UserModel {
     type Error = sqlx::error::Error;
 
     fn try_from(new_user: NewUserModel) -> Result<Self, Self::Error> {
         let user = UserModel {
             id: 0,
+            api_token: Uuid::new_v4(),
             name: new_user.name,
             email: new_user.email,
             password: new_user.password,

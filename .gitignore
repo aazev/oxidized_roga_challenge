@@ -1,2 +1,8 @@
+# compiled assets
 target
+
+# environment
 .env
+
+#dockerized mysql server data for local development
+.local/data

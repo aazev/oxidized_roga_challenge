@@ -5,4 +5,5 @@ CREATE TABLE annotations (
     description text NOT NULL,
     created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-)
+    CONSTRAINT annotations_person_id_foreign FOREIGN KEY (person_id) REFERENCES persons (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
