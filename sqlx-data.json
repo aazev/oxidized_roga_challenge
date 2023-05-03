@@ -10,7 +10,17 @@
     },
     "query": "\n                    INSERT INTO users (name, email, password)\n                    VALUES (?, ?, ?)\n                "
   },
-  "483191a6876fe159d45ef600ec5230e32367327370a75ba9efa7866d74748528": {
+  "3bb4699772618e765187c6cb53ae5fbb4c3af8b43dd23dc565d89a0f5c86cd49": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 6
+      }
+    },
+    "query": "INSERT INTO persons (name, mothers_name, fathers_name, cep, birth_date, created_at) VALUES (?, ?, ?, ?, ?, ?)"
+  },
+  "5b3096abffcff457e179ced963a176fc9add109c3fce301cd3556d0c5877cf62": {
     "describe": {
       "columns": [
         {
@@ -38,19 +48,19 @@
           }
         },
         {
-          "name": "email",
+          "name": "mothers_name",
           "ordinal": 2,
           "type_info": {
             "char_set": 224,
             "flags": {
-              "bits": 4101
+              "bits": 4097
             },
             "max_size": 1020,
             "type": "VarString"
           }
         },
         {
-          "name": "password",
+          "name": "fathers_name",
           "ordinal": 3,
           "type_info": {
             "char_set": 224,
@@ -62,8 +72,32 @@
           }
         },
         {
-          "name": "created_at",
+          "name": "cep",
           "ordinal": 4,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 32,
+            "type": "String"
+          }
+        },
+        {
+          "name": "birth_date",
+          "ordinal": 5,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4225
+            },
+            "max_size": 10,
+            "type": "Date"
+          }
+        },
+        {
+          "name": "created_at",
+          "ordinal": 6,
           "type_info": {
             "char_set": 63,
             "flags": {
@@ -75,7 +109,7 @@
         },
         {
           "name": "updated_at",
-          "ordinal": 5,
+          "ordinal": 7,
           "type_info": {
             "char_set": 63,
             "flags": {
@@ -87,6 +121,8 @@
         }
       ],
       "nullable": [
+        false,
+        false,
         false,
         false,
         false,
@@ -98,9 +134,112 @@
         "Right": 0
       }
     },
-    "query": "\n                SELECT id, name, email, password, created_at, updated_at\n                FROM users\n            "
+    "query": "SELECT * FROM persons"
   },
-  "494910cd6d925bb9076b9cb90d51b400e4f213ecfe6d5cadcdd44b17df68e990": {
+  "639778844f033058d84d707f9ad2bfe9921e992d32f1e17b1e0bc1a228d0036a": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 547
+            },
+            "max_size": 20,
+            "type": "LongLong"
+          }
+        },
+        {
+          "name": "api_token!: Uuid",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 1
+            },
+            "max_size": 64,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "name",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "email",
+          "ordinal": 3,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4101
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "password",
+          "ordinal": 4,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "created_at",
+          "ordinal": 5,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 1153
+            },
+            "max_size": 19,
+            "type": "Timestamp"
+          }
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 6,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 9344
+            },
+            "max_size": 19,
+            "type": "Timestamp"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n                SELECT id, \"api_token!: Uuid\", name, email, password, created_at, updated_at\n                FROM users\n                WHERE api_token = ?\n            "
+  },
+  "7ae41861ab6866bc361366762294b5a77babe29b0d7043b91a70c2ea0baabf2d": {
     "describe": {
       "columns": [
         {
@@ -128,19 +267,19 @@
           }
         },
         {
-          "name": "email",
+          "name": "mothers_name",
           "ordinal": 2,
           "type_info": {
             "char_set": 224,
             "flags": {
-              "bits": 4101
+              "bits": 4097
             },
             "max_size": 1020,
             "type": "VarString"
           }
         },
         {
-          "name": "password",
+          "name": "fathers_name",
           "ordinal": 3,
           "type_info": {
             "char_set": 224,
@@ -152,8 +291,32 @@
           }
         },
         {
-          "name": "created_at",
+          "name": "cep",
           "ordinal": 4,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 32,
+            "type": "String"
+          }
+        },
+        {
+          "name": "birth_date",
+          "ordinal": 5,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4225
+            },
+            "max_size": 10,
+            "type": "Date"
+          }
+        },
+        {
+          "name": "created_at",
+          "ordinal": 6,
           "type_info": {
             "char_set": 63,
             "flags": {
@@ -165,7 +328,7 @@
         },
         {
           "name": "updated_at",
-          "ordinal": 5,
+          "ordinal": 7,
           "type_info": {
             "char_set": 63,
             "flags": {
@@ -182,13 +345,15 @@
         false,
         false,
         false,
+        false,
+        false,
         true
       ],
       "parameters": {
         "Right": 1
       }
     },
-    "query": "\n                SELECT id, name, email, password, created_at, updated_at\n                FROM users\n                WHERE id = ?\n            "
+    "query": "SELECT * FROM persons WHERE id = ?"
   },
   "8044f451fd84e04443318ee8a4e0344b1b838eafa0865e2d6ebcd2d1529ed2ab": {
     "describe": {
@@ -200,6 +365,16 @@
     },
     "query": "\n                    DELETE FROM users\n                    WHERE id = ?\n                "
   },
+  "84033ca5934da97a4eb1debcb9198188f7a4da599c0fb9cd457cd8c45f708c96": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "DELETE FROM persons WHERE id = ?"
+  },
   "996bfffffdcaf34d435d8e8cc136a496c1f6dab379afebaaf6b57ec6c1c42942": {
     "describe": {
       "columns": [],
@@ -209,5 +384,324 @@
       }
     },
     "query": "\n                    UPDATE users\n                    SET name = ?, email = ?, password = ?\n                    WHERE id = ?\n                "
+  },
+  "a8bd88055b3effe0c5285dd28802ec2e9a7f47f083b8bd9f90818d32818f9026": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 547
+            },
+            "max_size": 20,
+            "type": "LongLong"
+          }
+        },
+        {
+          "name": "api_token!: Uuid",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 1
+            },
+            "max_size": 64,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "name",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "email",
+          "ordinal": 3,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4101
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "password",
+          "ordinal": 4,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "created_at",
+          "ordinal": 5,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 1153
+            },
+            "max_size": 19,
+            "type": "Timestamp"
+          }
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 6,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 9344
+            },
+            "max_size": 19,
+            "type": "Timestamp"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "\n                SELECT id, \"api_token!: Uuid\", name, email, password, created_at, updated_at\n                FROM users\n            "
+  },
+  "aa2d01a42466e7994f3c47b91586051f54dabad55454cb04a6f2013ea0c5a659": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 7
+      }
+    },
+    "query": "UPDATE persons SET name = ?, mothers_name = ?, fathers_name = ?, cep = ?, birth_date = ?, updated_at = ? WHERE id = ?"
+  },
+  "e86e06fdf17138ec43a0a1c8581d906ccab5cabd0879ffd3e7bfe131dd9f02e1": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 547
+            },
+            "max_size": 20,
+            "type": "LongLong"
+          }
+        },
+        {
+          "name": "api_token!: Uuid",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 1
+            },
+            "max_size": 64,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "name",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "email",
+          "ordinal": 3,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4101
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "password",
+          "ordinal": 4,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "created_at",
+          "ordinal": 5,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 1153
+            },
+            "max_size": 19,
+            "type": "Timestamp"
+          }
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 6,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 9344
+            },
+            "max_size": 19,
+            "type": "Timestamp"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n                SELECT id, \"api_token!: Uuid\", name, email, password, created_at, updated_at\n                FROM users\n                WHERE email = ?\n            "
+  },
+  "e9100fb729202d8c90a2c1cb58ec2b97527201d44135a5cf36d9b490d3b483d7": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 547
+            },
+            "max_size": 20,
+            "type": "LongLong"
+          }
+        },
+        {
+          "name": "api_token!: Uuid",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 1
+            },
+            "max_size": 64,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "name",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "email",
+          "ordinal": 3,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4101
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "password",
+          "ordinal": 4,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "created_at",
+          "ordinal": 5,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 1153
+            },
+            "max_size": 19,
+            "type": "Timestamp"
+          }
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 6,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 9344
+            },
+            "max_size": 19,
+            "type": "Timestamp"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n                SELECT id, \"api_token!: Uuid\", name, email, password, created_at, updated_at\n                FROM users\n                WHERE id = ?\n            "
   }
 }
