@@ -1,8 +1,23 @@
 [package]
 name = "backend"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+axum = "0.6.17"
+chrono = { version = "0.4.24", features = ["serde"] }
+chrono-tz = { version = "0.8.2", features = ["serde"] }
+dotenv = "0.15.0"
+futures-lite = "1.13.0"
+serde = { version = "1.0.160", features = ["derive"] }
+serde_json = { version = "1.0.96", features = ["preserve_order"] }
+sqlx = { version = "0.6.3", features = ["mysql", "bigdecimal", "macros", "runtime-tokio-rustls", "json", "chrono", "decimal", "uuid", "migrate", "tls", "offline", "ipnetwork"] }
+tokio = { version = "1.28.0", features = ["full"] }
+
+[dependencies.database]
+path = "../database"
+
+[dependencies.cep-service]
+path = "../cep-service"

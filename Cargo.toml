@@ -1,2 +1,12 @@
 [workspace]
-members= ["backend", "database"]
+members = ["backend", "database", "cep-service"]
+
+[profile.dev.package."*"]
+opt-level = "z"
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
+opt-level = 3
+# rustflags = ["-C", "target-cpu=native"]
