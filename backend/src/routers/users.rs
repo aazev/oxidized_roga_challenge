@@ -4,14 +4,10 @@ use axum::{
     body::Body,
     extract::{Path, State},
     http::StatusCode,
-    routing::{delete, get, post, put},
+    routing::{delete, get, put},
     Json, Router,
 };
-use database::{
-    models::user::{NewUserModel, UserModel},
-    traits::database::Database,
-    traits::persist::Persist,
-};
+use database::{models::user::UserModel, traits::database::Database, traits::persist::Persist};
 
 use crate::{messages::GenericMessage, state::ApplicationState};
 
@@ -19,11 +15,20 @@ pub fn get_router() -> Router<Arc<ApplicationState>, Body> {
     Router::new()
         .route("/users", get(list_users))
         .route("/users/:id", get(get_user))
-        .route("/users", post(create_user))
         .route("/users/:id", put(update_user))
         .route("/users/:id", delete(delete_user))
 }
-
+#[utoipa::path(
+    get,
+    path = "/users",
+    security(
+        ("api_token" = [])
+    ),
+    responses(
+        (status = 200, description="Listed all users successfully", body=[UserModel]),
+        (status = 403, description="Unauthorized", body=GenericMessage),
+    )
+)]
 pub async fn list_users(
     State(state): State<Arc<ApplicationState>>,
 ) -> Result<Json<Vec<UserModel>>, (StatusCode, String)> {
@@ -42,21 +47,6 @@ async fn get_user(
     match user {
         Ok(user) => Ok(Json(user)),
         Err(error) => Err((StatusCode::NOT_FOUND, error.to_string())),
-    }
-}
-
-async fn create_user(
-    State(state): State<Arc<ApplicationState>>,
-    Json(user): Json<NewUserModel>,
-) -> Result<Json<UserModel>, (StatusCode, String)> {
-    let user = match UserModel::try_from(user) {
-        Ok(user) => user,
-        Err(error) => return Err((StatusCode::BAD_REQUEST, error.to_string())),
-    };
-
-    match user.insert(&state.database_connection).await {
-        Ok(user) => Ok(Json(user)),
-        Err(error) => Err((StatusCode::INTERNAL_SERVER_ERROR, error.to_string())),
     }
 }
 

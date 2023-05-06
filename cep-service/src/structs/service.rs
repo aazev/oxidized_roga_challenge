@@ -16,7 +16,7 @@ impl CepService {
         }
     }
 
-    pub async fn retrieve_cep(cep: &Cep) -> CepServiceResponse {
+    async fn retrieve_cep(cep: &Cep) -> CepServiceResponse {
         let client = reqwest::Client::new();
         let url = format!("https://viacep.com.br/ws/{}/json/", cep);
         let response = client.get(&url).send().await.unwrap();
@@ -25,7 +25,7 @@ impl CepService {
         response
     }
 
-    pub async fn get_cep(&mut self, cep: Cep) -> CepServiceResponse {
+    pub async fn get_address(&mut self, cep: Cep) -> CepServiceResponse {
         match self.cache.get(&cep.to_string()) {
             Some(response) => response.clone(),
             None => {

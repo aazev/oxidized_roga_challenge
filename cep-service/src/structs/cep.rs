@@ -42,6 +42,14 @@ impl TryFrom<String> for Cep {
     }
 }
 
+impl TryFrom<&String> for Cep {
+    type Error = Box<dyn Error>;
+    fn try_from(value: &String) -> Result<Self, Self::Error> {
+        let value = value.clone();
+        Self::new(value)
+    }
+}
+
 impl Display for Cep {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(

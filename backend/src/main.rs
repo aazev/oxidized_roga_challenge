@@ -2,6 +2,7 @@ pub mod messages;
 pub mod middlewares;
 pub mod routers;
 pub mod state;
+pub mod objects;
 
 use axum::{middleware, routing::IntoMakeService, Json, Router};
 use clap::Parser;
@@ -14,7 +15,7 @@ use hyper::{
 use hyperlocal::{SocketIncoming, UnixServerExt};
 use messages::GenericMessage;
 use middlewares::authorization::auth;
-use routers::{login, users};
+use routers::{login, users, persons};
 use std::{env, error::Error, net::SocketAddr, path::Path, sync::Arc};
 use tokio::signal::ctrl_c;
 use tower_http::cors::{Any, CorsLayer};
@@ -91,7 +92,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .allow_headers([AUTHORIZATION, ACCEPT]);
     let api = Router::new()
         .merge(login::get_router())
-        .merge(users::get_router().layer(middleware::from_fn_with_state(app_state.clone(), auth)));
+        .merge(users::get_router().layer(middleware::from_fn_with_state(app_state.clone(), auth)))
+        .merge(persons::get_router().layer(middleware::from_fn_with_state(app_state.clone(), auth)));
 
     let app = Router::new()
         .nest("/api", api)

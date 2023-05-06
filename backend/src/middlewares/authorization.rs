@@ -34,6 +34,7 @@ pub async fn auth<B>(
             ))
         }
     };
+    println!("auth_header: {}", auth_header);
     let user_uuid = match Uuid::from_str(&auth_header) {
         Ok(user_uuid) => user_uuid,
         Err(_) => {
@@ -47,20 +48,18 @@ pub async fn auth<B>(
         }
     };
     let user = UserModel::get_by_uuid(user_uuid, &app_state.database_connection).await;
+    println!("User: {:?}", user);
     match user {
         Ok(user) => {
             req.extensions_mut().insert(user);
+            Ok(next.run(req).await)
         }
-        Err(_) => {
-            return Err((
-                StatusCode::FORBIDDEN,
-                Json(GenericMessage {
-                    status: 403,
-                    message: "Unauthorized".to_string(),
-                }),
-            ))
-        }
+        Err(_) => Err((
+            StatusCode::FORBIDDEN,
+            Json(GenericMessage {
+                status: 403,
+                message: "Unauthorized".to_string(),
+            }),
+        )),
     }
-
-    Ok(next.run(req).await)
 }

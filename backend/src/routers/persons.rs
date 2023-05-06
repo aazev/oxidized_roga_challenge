@@ -6,11 +6,15 @@ use axum::{
     routing::{delete, get, post},
     Json, Router,
 };
+use cep_service::{responses::service::CepServiceResponse, structs::cep::Cep, structs::service::CepService};
 use database::{
     models::person::{NewPersonModel, PersonModel},
+    models::annotation::AnnotationModel,
     traits::database::Database,
     traits::persist::Persist,
 };
+use crate::objects::{person::Person, annotation::Annotation, address::Address};
+
 use hyper::StatusCode;
 
 use crate::{messages::GenericMessage, state::ApplicationState};
@@ -25,10 +29,52 @@ pub fn get_router() -> Router<Arc<ApplicationState>, Body> {
 
 pub async fn list_persons(
     State(state): State<Arc<ApplicationState>>,
-) -> Result<Json<Vec<PersonModel>>, (StatusCode, Json<GenericMessage>)> {
-    let persons = PersonModel::list(&state.database_connection).await;
-    match persons {
-        Ok(persons) => Ok(Json(persons)),
+) -> Result<Json<Vec<Person>>, (StatusCode, Json<GenericMessage>)> {
+    let mut cep_service = Arc::clone(&state.cep_service);
+
+    match PersonModel::list(&state.database_connection).await {
+        Ok(person_models) => {
+            let mut persons = Vec::new();
+            for person_model in person_models {
+                let cep = Cep::try_from(person_model.cep.clone()).unwrap();
+                let address = Arc::<CepService>::get_mut(&mut cep_service).unwrap().get_address(cep).await;
+                persons.push(Person {
+                    id: person_model.id,
+                    name: person_model.name,
+                    mothers_name: person_model.mothers_name,
+                    fathers_name: person_model.fathers_name,
+                    cep: person_model.cep,
+                    address: match address {
+                        CepServiceResponse::CepNotFound(_) => None,
+                        CepServiceResponse::CepFound(address) => Some(Address {
+                            logradouro: address.logradouro,
+                            complemento: address.complemento,
+                            bairro: address.bairro,
+                            localidade: address.localidade,
+                            uf: address.uf,
+                            ibge: address.ibge,
+                            gia: address.gia,
+                            ddd: address.ddd,
+                            siafi: address.siafi,
+                        }),
+                    },
+                    annotations: match AnnotationModel::list(person_model.id, &state.database_connection).await {
+                        Ok(annotations) => annotations.into_iter().map(|annotation_model| {
+                        Annotation {
+                            id: annotation_model.id,
+                            title: annotation_model.title,
+                            description: annotation_model.description,
+                            created_at: annotation_model.created_at,
+                            updated_at: annotation_model.updated_at,
+                        }}).collect::<Vec<Annotation>>(),
+                        Err(_) => Vec::new(),
+                        },
+                    created_at: person_model.created_at,
+                    updated_at: person_model.updated_at,
+                });
+            }
+            Ok(Json(persons))
+        }
         Err(_) => Err((
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(GenericMessage::new(

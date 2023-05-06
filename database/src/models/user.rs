@@ -1,32 +1,52 @@
 use crate::traits::{database::Database, login::Login, persist::Persist, token::Token};
+use anyhow::bail;
+use argon2::{password_hash::SaltString, Argon2, PasswordHasher, PasswordVerifier};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
+use http::StatusCode;
+use rand::rngs::OsRng;
 use serde::{Deserialize, Serialize};
 use sqlx::{error::BoxDynError, MySqlPool};
+use utoipa::ToSchema;
 use uuid::Uuid;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct UserModel {
     pub id: u64,
-    pub api_token: Uuid,
+    pub api_token: String,
+    #[schema(example = "John Doe")]
     pub name: String,
+    #[schema(example = "john.doe@example.com")]
     pub email: String,
-    pub password: String,
+    #[serde(skip_serializing)]
+    #[schema(example = "password")]
+    password: String,
     pub created_at: DateTime<Utc>,
     pub updated_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct NewUserModel {
+    #[schema(example = "John Doe")]
     pub name: String,
+    #[schema(example = "john.doe@example.com")]
     pub email: String,
+    #[schema(example = "password")]
     pub password: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct LoginModel {
+    #[schema(example = "John Doe")]
     pub email: String,
+    #[schema(example = "password")]
     pub password: String,
+}
+
+impl UserModel {
+    pub fn get_password(&self) -> &str {
+        &self.password
+    }
 }
 
 #[async_trait]
@@ -41,7 +61,7 @@ impl Database<MySqlPool> for UserModel {
         let user = sqlx::query_as!(
             UserModel,
             r#"
-                SELECT id, "api_token!: Uuid", name, email, password, created_at, updated_at
+                SELECT id, api_token, name, email, password, created_at, updated_at
                 FROM users
                 WHERE id = ?
             "#,
@@ -59,7 +79,7 @@ impl Database<MySqlPool> for UserModel {
         let result = sqlx::query_as!(
             UserModel,
             r#"
-                SELECT id, "api_token!: Uuid", name, email, password, created_at, updated_at
+                SELECT id, api_token, name, email, password, created_at, updated_at
                 FROM users
             "#
         )
@@ -80,12 +100,13 @@ impl Persist for UserModel {
     {
         let result = sqlx::query!(
             r#"
-                    INSERT INTO users (name, email, password)
-                    VALUES (?, ?, ?)
+                    INSERT INTO users (name, email, password, api_token)
+                    VALUES (?, ?, ?, ?)
                 "#,
             &self.name,
             &self.email,
             &self.password,
+            &self.api_token.to_string(),
         )
         .execute(database_connection)
         .await?;
@@ -134,11 +155,11 @@ impl Persist for UserModel {
 
 #[async_trait]
 impl Login for UserModel {
-    async fn login(body: LoginModel, connection_pool: &Self::Connection) -> sqlx::Result<Self> {
+    async fn login(body: LoginModel, connection_pool: &Self::Connection) -> anyhow::Result<Self> {
         let user = sqlx::query_as!(
             UserModel,
             r#"
-                SELECT id, "api_token!: Uuid", name, email, password, created_at, updated_at
+                SELECT id, api_token, name, email, password, created_at, updated_at
                 FROM users
                 WHERE email = ?
             "#,
@@ -147,7 +168,35 @@ impl Login for UserModel {
         .fetch_one(connection_pool)
         .await?;
 
+        if !UserModel::verify_password(&body.password, user.get_password()) {
+            bail!(StatusCode::UNAUTHORIZED);
+        }
+
         Ok(user)
+    }
+
+    async fn set_password(
+        &mut self,
+        password: String,
+        connection_pool: &Self::Connection,
+    ) -> anyhow::Result<()> {
+        let salt = SaltString::generate(&mut OsRng);
+        let password_hash = Argon2::default().hash_password(password.as_bytes(), &salt);
+        match password_hash {
+            Ok(hash) => self.password = hash.to_string(),
+            Err(_) => bail!(StatusCode::INTERNAL_SERVER_ERROR),
+        }
+
+        let _ = self.update(connection_pool).await;
+
+        Ok(())
+    }
+
+    fn verify_password<'long>(password: &str, hash: &str) -> bool {
+        let parsed_hash = argon2::PasswordHash::new(hash).unwrap();
+        Argon2::default()
+            .verify_password(password.as_bytes(), &parsed_hash)
+            .is_ok()
     }
 }
 
@@ -163,11 +212,11 @@ impl Token for UserModel {
         let user = sqlx::query_as!(
             UserModel,
             r#"
-                SELECT id, "api_token!: Uuid", name, email, password, created_at, updated_at
+                SELECT id, api_token, name, email, password, created_at, updated_at
                 FROM users
                 WHERE api_token = ?
             "#,
-            uuid
+            uuid.to_string(),
         )
         .fetch_one(connection_pool)
         .await?;
@@ -179,12 +228,17 @@ impl TryFrom<NewUserModel> for UserModel {
     type Error = sqlx::error::Error;
 
     fn try_from(new_user: NewUserModel) -> Result<Self, Self::Error> {
+        let salt = SaltString::generate(&mut OsRng);
+        let password_hash = Argon2::default()
+            .hash_password(&new_user.password.as_bytes(), &salt)
+            .unwrap()
+            .to_string();
         let user = UserModel {
             id: 0,
-            api_token: Uuid::new_v4(),
+            api_token: Uuid::new_v4().to_string(),
             name: new_user.name,
             email: new_user.email,
-            password: new_user.password,
+            password: password_hash,
             created_at: Utc::now(),
             updated_at: None,
         };
