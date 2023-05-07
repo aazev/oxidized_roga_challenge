@@ -8,12 +8,13 @@ use axum::{
     Json,
 };
 use database::{models::user::UserModel, traits::token::Token};
+use sqlx::MySqlPool;
 use uuid::Uuid;
 
-use crate::{messages::GenericMessage, state::ApplicationState};
+use crate::messages::GenericMessage;
 
 pub async fn auth<B>(
-    State(app_state): State<Arc<ApplicationState>>,
+    State(state): State<Arc<MySqlPool>>,
     mut req: Request<B>,
     next: Next<B>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<GenericMessage>)> {
@@ -34,7 +35,6 @@ pub async fn auth<B>(
             ))
         }
     };
-    println!("auth_header: {}", auth_header);
     let user_uuid = match Uuid::from_str(&auth_header) {
         Ok(user_uuid) => user_uuid,
         Err(_) => {
@@ -47,8 +47,7 @@ pub async fn auth<B>(
             ))
         }
     };
-    let user = UserModel::get_by_uuid(user_uuid, &app_state.database_connection).await;
-    println!("User: {:?}", user);
+    let user = UserModel::get_by_uuid(user_uuid, &state).await;
     match user {
         Ok(user) => {
             req.extensions_mut().insert(user);

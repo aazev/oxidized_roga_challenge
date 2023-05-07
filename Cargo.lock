@@ -210,14 +210,13 @@ dependencies = [
  "futures-lite",
  "hyper",
  "hyperlocal",
+ "num_cpus",
  "serde",
  "serde_json",
  "sqlx",
  "tokio",
  "tower",
  "tower-http",
- "utoipa",
- "utoipa-swagger-ui",
  "uuid",
 ]
 

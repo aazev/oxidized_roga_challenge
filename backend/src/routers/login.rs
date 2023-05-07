@@ -6,20 +6,21 @@ use database::{
     traits::{login::Login, persist::Persist},
 };
 use hyper::{Body, StatusCode};
+use sqlx::MySqlPool;
 
-use crate::{messages::GenericMessage, state::ApplicationState};
+use crate::messages::GenericMessage;
 
-pub fn get_router() -> Router<Arc<ApplicationState>, Body> {
+pub fn get_router() -> Router<Arc<MySqlPool>, Body> {
     Router::new()
         .route("/users/login", post(login))
         .route("/users/new", post(create_user))
 }
 
 async fn login(
-    State(state): State<Arc<ApplicationState>>,
+    State(state): State<Arc<MySqlPool>>,
     Json(user): Json<LoginModel>,
 ) -> Result<Json<UserModel>, (StatusCode, Json<GenericMessage>)> {
-    match UserModel::login(user, &state.database_connection).await {
+    match UserModel::login(user, &state).await {
         Ok(user) => Ok(Json(user)),
         Err(_) => Err((
             StatusCode::NOT_FOUND,
@@ -29,7 +30,7 @@ async fn login(
 }
 
 async fn create_user(
-    State(state): State<Arc<ApplicationState>>,
+    State(state): State<Arc<MySqlPool>>,
     Json(user): Json<NewUserModel>,
 ) -> Result<Json<UserModel>, (StatusCode, String)> {
     let user = match UserModel::try_from(user) {
@@ -37,7 +38,7 @@ async fn create_user(
         Err(error) => return Err((StatusCode::BAD_REQUEST, error.to_string())),
     };
 
-    match user.insert(&state.database_connection).await {
+    match user.insert(&state).await {
         Ok(user) => Ok(Json(user)),
         Err(error) => Err((StatusCode::INTERNAL_SERVER_ERROR, error.to_string())),
     }
