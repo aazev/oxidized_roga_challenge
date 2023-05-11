@@ -6,11 +6,11 @@ use chrono::{DateTime, Utc};
 use http::StatusCode;
 use rand::rngs::OsRng;
 use serde::{Deserialize, Serialize};
-use sqlx::{error::BoxDynError, MySqlPool};
+use sqlx::{error::BoxDynError, FromRow, MySqlPool};
 use utoipa::ToSchema;
 use uuid::Uuid;
 
-#[derive(Debug, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Serialize, Deserialize, ToSchema, Clone, FromRow)]
 pub struct UserModel {
     pub id: u64,
     pub api_token: String,

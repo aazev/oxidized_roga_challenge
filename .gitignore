@@ -6,3 +6,4 @@ target
 
 #dockerized mysql server data for local development
 .local/data
+.local/redis

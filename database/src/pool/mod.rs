@@ -46,9 +46,10 @@ impl DatabaseConfig {
 
 pub async fn connect() -> Result<MySqlPool, sqlx::Error> {
     dotenv().ok();
+    let cpus = num_cpus::get().to_string();
     let connection_string = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let max_connections: u32 = env::var("DATABASE_MAX_CONNECTIONS")
-        .unwrap_or("2".to_string())
+        .unwrap_or(cpus)
         .parse()
         .unwrap();
     let min_connections: u32 = env::var("DATABASE_MIN_CONNECTIONS")

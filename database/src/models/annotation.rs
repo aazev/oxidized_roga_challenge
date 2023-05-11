@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
-use sqlx::MySqlPool;
+use sqlx::{MySqlPool, FromRow};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct AnnotationModel {
     pub id: u64,
     pub person_id: u64,

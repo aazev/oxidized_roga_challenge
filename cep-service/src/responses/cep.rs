@@ -1,10 +1,8 @@
 use serde::Deserialize;
 
-use crate::structs::cep::Cep;
-
 #[derive(Debug, Deserialize, Clone)]
 pub struct CepResponse {
-    pub cep: Cep,
+    // pub cep: String,
     pub logradouro: String,
     pub complemento: String,
     pub bairro: String,

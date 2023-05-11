@@ -1,0 +1,12 @@
+
+- name: Login user
+  duration: 23.33153
+  status: 200
+
+- name: Fetch all persons
+  duration: 0.761958
+  status: 200
+
+- name: Fetch person by id
+  duration: 0.670776
+  status: 200

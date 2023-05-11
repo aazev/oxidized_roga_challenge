@@ -1,11 +1,11 @@
 use async_trait::async_trait;
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
-use sqlx::{error::BoxDynError, MySqlPool};
+use sqlx::{error::BoxDynError, FromRow, MySqlPool};
 
 use crate::traits::{database::Database, persist::Persist};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct PersonModel {
     pub id: u64,
     pub name: String,

@@ -626,6 +626,7 @@ dependencies = [
  "dotenv",
  "http",
  "http-body",
+ "num_cpus",
  "rand",
  "serde",
  "serde_json",

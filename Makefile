@@ -1,5 +1,6 @@
 start:
 	mkdir -p .local/data
+	mkdir -p .local/redis
 	docker compose -f .local/docker-compose.yml up -d
 
 stop:

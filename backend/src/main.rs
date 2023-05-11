@@ -4,10 +4,8 @@ pub mod objects;
 pub mod routers;
 pub mod state;
 
-use axum::{middleware, routing::IntoMakeService, Extension, Json, Router};
-use cep_service::structs::service::CepService;
+use axum::{middleware, routing::IntoMakeService, Json, Router};
 use clap::Parser;
-use database::pool::connect;
 use dotenv::dotenv;
 use hyper::{
     header::{ACCEPT, AUTHORIZATION},
@@ -18,13 +16,7 @@ use hyperlocal::{SocketIncoming, UnixServerExt};
 use messages::GenericMessage;
 use middlewares::authorization::auth;
 use routers::{login, persons, users};
-use std::{
-    env,
-    error::Error,
-    net::SocketAddr,
-    path::Path,
-    sync::{Arc, RwLock},
-};
+use std::{env, error::Error, net::SocketAddr, path::Path};
 use tokio::signal::ctrl_c;
 use tower_http::cors::{Any, CorsLayer};
 
@@ -85,8 +77,7 @@ fn address_serve(rt: Router) -> Server<AddrIncoming, IntoMakeService<Router>> {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     dotenv().ok();
-    let db_pool = Arc::new(connect().await.unwrap());
-    let cep_service = Arc::new(RwLock::new(CepService::new()));
+    let app_state = state::ApplicationState::new().await;
     let cors = CorsLayer::new()
         .allow_origin(Any)
         .allow_methods([
@@ -99,13 +90,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .allow_headers([AUTHORIZATION, ACCEPT]);
     let api = Router::new()
         .merge(login::get_router())
-        .merge(users::get_router().layer(middleware::from_fn_with_state(db_pool.clone(), auth)))
-        .merge(persons::get_router().layer(middleware::from_fn_with_state(db_pool.clone(), auth)));
+        .merge(users::get_router().layer(middleware::from_fn_with_state(app_state.clone(), auth)))
+        .merge(
+            persons::get_router().layer(middleware::from_fn_with_state(app_state.clone(), auth)),
+        );
 
     let app = Router::new()
         .nest("/api", api)
-        .with_state(db_pool.clone())
-        .layer(Extension(cep_service.clone()))
+        .with_state(app_state.clone())
         .layer(cors)
         .fallback(deal_with_it);
 

@@ -2,12 +2,13 @@ version: "3.8"
 
 services:
   oxidized-roga-challenge-db:
+    container_name: mysql
     user: "1000:1000"
     env_file:
       - ../.env
     build:
       context: ./.local
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-MySQL
     volumes:
       - ./data:/var/lib/mysql
     environment:
@@ -19,3 +20,15 @@ services:
     ports:
       - 3306:3306
     restart: always
+
+  oxidized-roga-redis:
+    container_name: redis
+    command: bash -c "redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}"
+    user: "1000:1000"
+    build:
+      context: ./.local
+      dockerfile: Dockerfile-Redis
+    volumes:
+      - ./redis:/data
+    ports:
+      - "6379:6379"

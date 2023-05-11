@@ -1,4 +1,4 @@
-use std::{str::FromStr, sync::Arc};
+use std::str::FromStr;
 
 use axum::{
     extract::State,
@@ -8,13 +8,12 @@ use axum::{
     Json,
 };
 use database::{models::user::UserModel, traits::token::Token};
-use sqlx::MySqlPool;
 use uuid::Uuid;
 
-use crate::messages::GenericMessage;
+use crate::{messages::GenericMessage, state::ApplicationState};
 
 pub async fn auth<B>(
-    State(state): State<Arc<MySqlPool>>,
+    State(state): State<ApplicationState>,
     mut req: Request<B>,
     next: Next<B>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<GenericMessage>)> {
@@ -47,9 +46,15 @@ pub async fn auth<B>(
             ))
         }
     };
-    let user = UserModel::get_by_uuid(user_uuid, &state).await;
+    if state.user_cached(&auth_header) {
+        let user = state.get_user_cache(&auth_header).unwrap();
+        req.extensions_mut().insert(user);
+        return Ok(next.run(req).await);
+    }
+    let user = UserModel::get_by_uuid(user_uuid, &state.database_connection).await;
     match user {
         Ok(user) => {
+            state.insert_user_cache(&auth_header, &user);
             req.extensions_mut().insert(user);
             Ok(next.run(req).await)
         }
