@@ -43,18 +43,13 @@ jobs:
           override: true
           components: rustfmt, clippy
 
-      - name: Run cargo release build
-        run: cargo build --release
-        env:
-          CARGO_HOME: ~/.cargo
-          RUSTFLAGS: "-Ctarget-cpu=native"
-
       - name: Run cargo test
         run: cargo test
         env:
           CARGO_HOME: ~/.cargo
 
-      # - name: Run cargo fmt check
-      #   run: cargo fmt --all -- --check
-      #   env:
-      #     CARGO_HOME: ~/.cargo
+      - name: Run cargo release build
+        run: cargo build --release
+        env:
+          CARGO_HOME: ~/.cargo
+          RUSTFLAGS: "-Ctarget-cpu=native"
