@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "INSERT INTO persons (name, mothers_name, fathers_name, cep, birth_date, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": []
+  },
+  "hash": "3bb4699772618e765187c6cb53ae5fbb4c3af8b43dd23dc565d89a0f5c86cd49"
+}

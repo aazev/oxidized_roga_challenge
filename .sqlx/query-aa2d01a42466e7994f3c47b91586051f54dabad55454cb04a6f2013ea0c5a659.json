@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "UPDATE persons SET name = ?, mothers_name = ?, fathers_name = ?, cep = ?, birth_date = ?, updated_at = ? WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 7
+    },
+    "nullable": []
+  },
+  "hash": "aa2d01a42466e7994f3c47b91586051f54dabad55454cb04a6f2013ea0c5a659"
+}

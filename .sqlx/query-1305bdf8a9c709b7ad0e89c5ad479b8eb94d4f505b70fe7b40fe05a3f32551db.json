@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "\n                    INSERT INTO users (name, email, password, api_token)\n                    VALUES (?, ?, ?, ?)\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "1305bdf8a9c709b7ad0e89c5ad479b8eb94d4f505b70fe7b40fe05a3f32551db"
+}
