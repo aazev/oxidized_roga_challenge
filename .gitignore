@@ -3,6 +3,7 @@ target
 
 # environment
 .env
+.bacon-locations
 
 #dockerized mysql server data for local development
 .local/data
