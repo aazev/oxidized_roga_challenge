@@ -3,7 +3,6 @@ use crate::{
     state::ApplicationState,
 };
 use axum::{
-    body::Body,
     extract::{Path, State},
     routing::{delete, get, post},
     Json, Router,
@@ -20,7 +19,7 @@ use hyper::StatusCode;
 
 use crate::messages::GenericMessage;
 
-pub fn get_router() -> Router<ApplicationState, Body> {
+pub fn get_router() -> Router<ApplicationState> {
     Router::new()
         .route("/persons", get(list_persons))
         .route("/persons/:id", get(get_person))

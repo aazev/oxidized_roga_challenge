@@ -1,10 +1,12 @@
 use crate::traits::{database::Database, login::Login, persist::Persist, token::Token};
 use anyhow::bail;
-use argon2::{password_hash::SaltString, Argon2, PasswordHasher, PasswordVerifier};
+use argon2::{
+    password_hash::{rand_core::OsRng, SaltString},
+    Argon2, PasswordHasher, PasswordVerifier,
+};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use http::StatusCode;
-use rand::rngs::OsRng;
 use serde::{Deserialize, Serialize};
 use sqlx::{error::BoxDynError, FromRow, MySqlPool};
 use utoipa::ToSchema;
@@ -110,7 +112,7 @@ impl Persist for UserModel {
         )
         .execute(database_connection)
         .await?;
-        Ok(Self::get(result.last_insert_id() as u64, &database_connection).await?)
+        Ok(Self::get(result.last_insert_id() as u64, database_connection).await?)
     }
 
     async fn update<'long>(
@@ -130,7 +132,7 @@ impl Persist for UserModel {
         )
         .execute(database_connection)
         .await?;
-        Ok(Self::get(result.last_insert_id() as u64, &database_connection).await?)
+        Ok(Self::get(result.last_insert_id() as u64, database_connection).await?)
     }
 
     async fn delete<'long>(
@@ -230,7 +232,7 @@ impl TryFrom<NewUserModel> for UserModel {
     fn try_from(new_user: NewUserModel) -> Result<Self, Self::Error> {
         let salt = SaltString::generate(&mut OsRng);
         let password_hash = Argon2::default()
-            .hash_password(&new_user.password.as_bytes(), &salt)
+            .hash_password(new_user.password.as_bytes(), &salt)
             .unwrap()
             .to_string();
         let user = UserModel {

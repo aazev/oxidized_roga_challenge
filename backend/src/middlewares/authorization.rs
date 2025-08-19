@@ -1,8 +1,8 @@
 use std::str::FromStr;
 
 use axum::{
-    extract::State,
-    http::{header, Request, StatusCode},
+    extract::{Request, State},
+    http::{header, StatusCode},
     middleware::Next,
     response::IntoResponse,
     Json,
@@ -12,17 +12,16 @@ use uuid::Uuid;
 
 use crate::{messages::GenericMessage, state::ApplicationState};
 
-pub async fn auth<B>(
+pub async fn auth(
     State(state): State<ApplicationState>,
-    mut req: Request<B>,
-    next: Next<B>,
+    mut req: Request,
+    next: Next,
 ) -> Result<impl IntoResponse, (StatusCode, Json<GenericMessage>)> {
     let headers = req.headers().clone();
     let auth_header = match headers.get(header::AUTHORIZATION) {
         Some(auth_header) => {
             let auth_header = auth_header.to_str().unwrap();
-            let auth_header = auth_header.replace("Bearer ", "");
-            auth_header
+            auth_header.replace("Bearer ", "")
         }
         None => {
             return Err((

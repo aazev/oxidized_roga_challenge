@@ -1,5 +1,4 @@
 use axum::{
-    body::Body,
     extract::{Path, State},
     http::StatusCode,
     routing::{delete, get, put},
@@ -9,7 +8,7 @@ use database::{models::user::UserModel, traits::database::Database, traits::pers
 
 use crate::{messages::GenericMessage, state::ApplicationState};
 
-pub fn get_router() -> Router<ApplicationState, Body> {
+pub fn get_router() -> Router<ApplicationState> {
     Router::new()
         .route("/users", get(list_users))
         .route("/users/:id", get(get_user))

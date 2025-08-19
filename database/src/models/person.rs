@@ -73,7 +73,7 @@ impl Persist for PersonModel {
             self.birth_date,
             self.created_at,
         ).execute(database_connection).await?;
-        Ok(Self::get(result.last_insert_id() as u64, &database_connection).await?)
+        Ok(Self::get(result.last_insert_id() as u64, database_connection).await?)
     }
 
     async fn update<'long>(
@@ -93,7 +93,7 @@ impl Persist for PersonModel {
             self.updated_at,
             self.id,
         ).execute(database_connection).await?;
-        Ok(Self::get(result.last_insert_id() as u64, &database_connection).await?)
+        Ok(Self::get(result.last_insert_id() as u64, database_connection).await?)
     }
 
     async fn delete<'long>(

@@ -3,11 +3,11 @@ use database::{
     models::user::{LoginModel, NewUserModel, UserModel},
     traits::{login::Login, persist::Persist},
 };
-use hyper::{Body, StatusCode};
+use hyper::StatusCode;
 
 use crate::{messages::GenericMessage, state::ApplicationState};
 
-pub fn get_router() -> Router<ApplicationState, Body> {
+pub fn get_router() -> Router<ApplicationState> {
     Router::new()
         .route("/users/login", post(login))
         .route("/users/new", post(create_user))

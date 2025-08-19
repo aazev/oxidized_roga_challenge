@@ -4,20 +4,21 @@ pub mod objects;
 pub mod routers;
 pub mod state;
 
-use axum::{middleware, routing::IntoMakeService, Json, Router};
+use axum::{middleware, Json, Router};
 use clap::Parser;
 use dotenv::dotenv;
 use hyper::{
     header::{ACCEPT, AUTHORIZATION},
-    server::conn::AddrIncoming,
-    Method, Server, StatusCode,
+    Method, StatusCode,
 };
-use hyperlocal::{SocketIncoming, UnixServerExt};
 use messages::GenericMessage;
 use middlewares::authorization::auth;
 use routers::{login, persons, users};
 use std::{env, error::Error, net::SocketAddr, path::Path};
-use tokio::signal::ctrl_c;
+use tokio::{
+    net::{TcpListener, UnixListener},
+    signal::ctrl_c,
+};
 use tower_http::cors::{Any, CorsLayer};
 
 #[derive(Clone, Debug, PartialEq, Eq, clap::ValueEnum)]
@@ -32,7 +33,7 @@ struct Opts {
     mode: ServiceMode,
 }
 
-fn socket_serve(rt: Router) -> Server<SocketIncoming, IntoMakeService<Router>> {
+async fn socket_serve(rt: Router) -> std::io::Result<()> {
     let socket_addr = env::var("SOCKET_ADDR").expect("SOCKET_ADDR must be set.");
     let socket_file = Path::new(&socket_addr);
     let socket_folder = socket_file.parent().unwrap();
@@ -56,22 +57,28 @@ fn socket_serve(rt: Router) -> Server<SocketIncoming, IntoMakeService<Router>> {
         false => println!("No existing socket file found."),
     }
 
+    let listener = UnixListener::bind(socket_file)?;
+
     println!("Starting server on socket: {}", socket_addr);
 
-    Server::bind_unix(socket_file)
-        .expect("Failed to bind to socket.")
-        .serve(rt.into_make_service())
+    axum::serve(listener, rt.into_make_service())
+        .await
+        .map_err(std::io::Error::other)
 }
 
-fn address_serve(rt: Router) -> Server<AddrIncoming, IntoMakeService<Router>> {
+async fn address_serve(rt: Router) -> std::io::Result<()> {
     let address = env::var("BIND_ADDRESS").expect("BIND_ADDRESS must be set.");
     let server_address: SocketAddr = address
         .parse::<SocketAddr>()
         .expect("Failed to parse server address.");
 
+    let listener = TcpListener::bind(server_address).await?;
+
     println!("Starting server on address: {}", &address);
 
-    Server::bind(&server_address).serve(rt.into_make_service())
+    axum::serve(listener, rt.into_make_service())
+        .await
+        .map_err(std::io::Error::other)
 }
 
 #[tokio::main]

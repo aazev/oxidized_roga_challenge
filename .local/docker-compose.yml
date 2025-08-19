@@ -7,7 +7,6 @@ services:
     env_file:
       - ../.env
     build:
-      context: ./.local
       dockerfile: Dockerfile-MySQL
     volumes:
       - ./data:/var/lib/mysql
@@ -26,7 +25,6 @@ services:
     command: bash -c "redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}"
     user: "1000:1000"
     build:
-      context: ./.local
       dockerfile: Dockerfile-Redis
     volumes:
       - ./redis:/data

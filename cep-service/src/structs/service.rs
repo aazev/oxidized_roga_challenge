@@ -9,7 +9,7 @@ use crate::responses::service::CepServiceResponse;
 
 use super::cep::Cep;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct CepService {
     cache: Arc<RwLock<HashMap<String, CepServiceResponse>>>,
 }
@@ -28,8 +28,7 @@ impl CepService {
         let url = format!("https://viacep.com.br/ws/{}/json/", cep);
         let response = client.get(&url).headers(headers).send().await.unwrap();
         let json = response.text().await.unwrap();
-        let result = serde_json::from_str::<CepServiceResponse>(&json).unwrap();
-        result
+        serde_json::from_str::<CepServiceResponse>(&json).unwrap()
     }
 
     pub async fn get_address(&self, cep: Cep) -> CepServiceResponse {
