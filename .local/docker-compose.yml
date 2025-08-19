@@ -19,7 +19,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
       - 3306:3306
-    restart: always
+    restart: on-failure:5
 
   oxidized-roga-redis:
     container_name: redis
@@ -32,3 +32,4 @@ services:
       - ./redis:/data
     ports:
       - "6379:6379"
+    restart: on-failure:5
